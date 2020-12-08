@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "ddbblog0212"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1jidmwm5vyyhm"
+s3_prefix = "ddbblog0212"
+region = "eu-west-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "TargetDynamoDBTable=\"Employee\" TargetRegion=\"eu-west-1\" TargetAccountNumber=\"572463205119\" MaximumRecordAgeInSeconds=\"3600\" TargetRoleName=\"TargetDynamoRole\" SourceTableStreamARN=\"arn:aws:dynamodb:eu-west-1:169982180660:table/Employee/stream/2020-09-30T16:16:24.224\""
+

@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    Stack that deploys one Lambda function that reads from DynamoDB Stream and replicates the changes to Target DynamoDB Table cross account 
+    Functoion is triggered by DynamoDB stream
+    
+Parameters:
+  TargetDynamoDBTable: 
+    Type: String
+    ConstraintDescription: '[A-Za-z0-9_]+'
+    Description: >
+        Target DynamoDB Table name
+  TargetRegion: 
+    Type: String
+    ConstraintDescription: '[a-z0-9\-]+'
+    Default: 'eu-west-1'
+    Description: >
+        The region for the target DynamoDB table
+  TargetAccountNumber: 
+    Type: String
+    ConstraintDescription: '[0-9]+'
+    Description: >
+        Target AWS Account Number
+  MaximumRecordAgeInSeconds: 
+    Type: String
+    ConstraintDescription: '[0-9]+'
+    Description: >
+        The maximum age (in seconds) of a record that Lambda sends to your function.
+  TargetRoleName: 
+    Type: String
+    Description: >
+        Target IAM Role name to be assumed by Lambda function
+  SourceTableStreamARN:
+    Type: String
+    Description: >
+        Source Dynamo DB table stream ARN
+Resources:
+# Lambda function for realtime replication
+    ReplayFromStreamFn:
+        Type: AWS::Serverless::Function
+        Properties:
+            CodeUri: functions/
+            Handler: ReplayFromStream.lambda_handler
+            Runtime: python3.8
+            Timeout: 900
+            Policies:
+            - Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:DescribeStream
+                    - dynamodb:GetRecords
+                    - dynamodb:GetShardIterator",
+                    - dynamodb:ListStreams
+                  Resource: !Ref SourceTableStreamARN
+                - Effect: Allow
+                  Action:
+                    - sts:AssumeRole
+                  Resource: !Sub "arn:aws:iam::${TargetAccountNumber}:role/${TargetRoleName}"
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvent
+                  Resource: '*'
+            Environment:
+                Variables:
+                    TARGET_AWS_ACCOUNT_NUMBER: !Ref TargetAccountNumber
+                    TARGET_DYNAMODB_NAME: !Ref TargetDynamoDBTable
+                    TARGET_ROLE_NAME: !Ref TargetRoleName
+                    TARGET_REGION: !Ref TargetRegion
+            Events:
+              DDBEvent:
+                Type: DynamoDB
+                Properties:
+                  Stream: !Ref SourceTableStreamARN
+                  StartingPosition: TRIM_HORIZON
+                  BatchSize: 1000
+                  Enabled: false
+                  MaximumRecordAgeInSeconds: !Ref MaximumRecordAgeInSeconds
+
