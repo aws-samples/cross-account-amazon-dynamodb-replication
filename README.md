@@ -14,7 +14,7 @@ This repository accompanies the [Cross Account Amazon DynamoDB Replication](http
 
 ├── ChangeDataCapture <-- The SAM template for Change Data Capture (CDC)
 
-├── InitialMigrationWithNativeExport <-- Sample Glue code to help you get started. Bash script to change the owner of the objects in the target S3 bucket. For more information, check out the [blog](https://aws.amazon.com/blogs/big-data/automating-bucketing-of-streaming-data-using-amazon-athena-and-aws-lambda/)
+├── InitialMigrationWithNativeExport <-- Sample Glue code to help you get started. Bash script to change the owner of the objects in the target S3 bucket.
 
 ```
 
