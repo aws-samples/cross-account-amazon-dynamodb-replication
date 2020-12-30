@@ -1,7 +1,7 @@
 #  Cross Account Amazon DynamoDB Replication
 
   
-This repository accompanies the [Cross Account Amazon DynamoDB Replication](https://aws.amazon.com/blogs/big-data/automating-bucketing-of-streaming-data-using-amazon-athena-and-aws-lambda/) blog post. It contains **two** [AWS Serverless Application Model (AWS SAM)](https://aws.amazon.com/serverless/sam/) templates. 
+This repository accompanies the [Cross Account Amazon DynamoDB Replication](https://aws.amazon.com/blogs/database/cross-account-replication-with-amazon-dynamodb/) blog post. It contains **two** [AWS Serverless Application Model (AWS SAM)](https://aws.amazon.com/serverless/sam/) templates. 
 
 1. First template deploys an [AWS Glue](https://aws.amazon.com/glue) job used for loading the data from the source DynamoDB table to the target DynamoDB table. If you are using the native [DynamoDB export feature](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBPipeline.html), do not use this template. Only use this template if the source DynamoDB table size is less than 140GB and you are using AWS Glue job for export and import.
 2. The second template deploys one [AWS Lambda](https://aws.amazon.com/lambda) function that reads from source DynamoDB stream and replicates the changes to the target [Amazon DyanmoDB](https://aws.amazon.com/dynamodb/) table in a different AWS account.
