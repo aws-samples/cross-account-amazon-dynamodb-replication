@@ -71,7 +71,7 @@ Follow the prompts in the deploy process to set the stack name, AWS Region and o
 
 ### Change Data Capture (CDC)
 
-1. From the command line, change directory to SAM template directory for Initial Load
+1. From the command line, change directory to SAM template directory for Change Data Capture
 
 ```
 
