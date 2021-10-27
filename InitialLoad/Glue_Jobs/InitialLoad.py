@@ -11,6 +11,7 @@ args = getResolvedOptions(sys.argv, ['TARGET_DYNAMODB_NAME','SOURCE_DYNAMODB_NAM
 target_aws_account_num = args['TARGET_AWS_ACCOUNT_NUMBER']
 target_role_name = args['TARGET_ROLE_NAME']
 target_ddb_name = args['TARGET_DYNAMODB_NAME']
+source_region = boto3.session.Session().region_name
 region = args['TARGET_REGION']
 source_ddb_name = args['SOURCE_DYNAMODB_NAME']
 worker_type = args['WORKER_TYPE']
@@ -23,7 +24,7 @@ if worker_type == 'G.2X':
 
 elif worker_type == 'G.1X':
     ddb_split= 8 * (int(num_workers) - 1)
-else: 
+else:
     num_executers = (int(num_workers) - 1) * 2 - 1
     ddb_split = 4 * num_executers
 
@@ -38,7 +39,7 @@ job.init(args["JOB_NAME"], args)
 dyf = glue_context.create_dynamic_frame_from_options(
 connection_type="dynamodb",
 connection_options={
-"dynamodb.region": region,
+"dynamodb.region": source_region,
 "dynamodb.splits": str(ddb_split),
 "dynamodb.throughput.read.percent":"1.2",
 "dynamodb.input.tableName": source_ddb_name
