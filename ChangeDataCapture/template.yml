@@ -61,7 +61,7 @@ Resources:
                   Action:
                     - logs:CreateLogGroup
                     - logs:CreateLogStream
-                    - logs:PutLogEvent
+                    - logs:PutLogEvents
                   Resource: '*'
             Environment:
                 Variables:
