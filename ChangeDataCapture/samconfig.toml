@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "cross-account-dynamo-replication"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-9mxze9oyknko"
+s3_prefix = "cross-account-dynamo-replication"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "TargetDynamoDBTable=\"mx_admin_dmarc_copy\" TargetRegion=\"us-east-1\" TargetAccountNumber=\"233870680723\" MaximumRecordAgeInSeconds=\"-1\" TargetRoleName=\"Cross-Account-Dynamo-Role\" SourceTableStreamARN=\"arn:aws:dynamodb:us-east-1:682422205370:table/mx_admin_dmarc_copy/stream/2022-08-06T23:44:43.890\""
+image_repositories = []

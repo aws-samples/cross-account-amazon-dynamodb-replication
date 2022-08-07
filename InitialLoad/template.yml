@@ -70,7 +70,7 @@ Resources:
         WorkerType: !Ref WorkerType
         GlueVersion: 2.0
         ExecutionProperty:   
-          MaxConcurrentRuns: 1
+          MaxConcurrentRuns: 10
         Name: !Ref JobName
     
     GlueJobRole:
@@ -109,7 +109,7 @@ Resources:
                     - dynamodb:GetItem
                     - dynamodb:Scan
                     - dynamodb:Query
-                  Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SourceDynamoDBTable}"
+                  Resource: "*"
                 - Effect: "Allow"
                   Action:
                     - dynamodb:ListTables
