@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "dynamo-migrate-prod-complaint-events"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-9mxze9oyknko"
+s3_prefix = "dynamo-migrate-prod-complaint-events"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "TargetDynamoDBTable=\"mx_yaml_prod_complaint_events\" TargetRegion=\"us-east-1\" TargetAccountNumber=\"191686924229\" TargetRoleName=\"Cross-Account-Dynamo-Role\" SourceDynamoDBTable=\"mx_yaml_prod_complaint_events\" WorkerType=\"G.2X\" NumberOfWorkers=\"5\" JobName=\"initial-load-prod-complaint-events\""
+image_repositories = []

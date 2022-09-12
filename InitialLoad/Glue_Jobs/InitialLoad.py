@@ -46,22 +46,13 @@ connection_options={
 )
 dyf.show()
 
-sts_client = boto3.client('sts')
-sts_response = sts_client.assume_role(RoleArn=target_role_arn, RoleSessionName='assume-role')
-
-ddb_key = sts_response['Credentials']['AccessKeyId']
-ddb_secret = sts_response['Credentials']['SecretAccessKey']
-ddb_token = sts_response['Credentials']['SessionToken']
-
 glue_context.write_dynamic_frame_from_options(
 frame=dyf,
 connection_type="dynamodb",
 connection_options={
 "dynamodb.region": region,
 "dynamodb.output.tableName": target_ddb_name,
-"dynamodb.awsAccessKeyId": ddb_key,
-"dynamodb.awsSecretAccessKey": ddb_secret,
-"dynamodb.awsSessionToken": ddb_token
+"dynamodb.sts.roleArn": target_role_arn
 }
 )
 job.commit()
