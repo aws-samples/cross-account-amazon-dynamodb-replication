@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Stack that deploys one Lambda function that reads from DynamoDB Stream
+  and replicates the changes to Target DynamoDB Table cross account  Functoion is
+  triggered by DynamoDB stream
+
+  '
+Parameters:
+  TargetDynamoDBTable:
+    Type: String
+    ConstraintDescription: '[A-Za-z0-9_]+'
+    Description: 'Target DynamoDB Table name
+
+      '
+  TargetRegion:
+    Type: String
+    ConstraintDescription: '[a-z0-9\-]+'
+    Default: eu-west-1
+    Description: 'The region for the target DynamoDB table
+
+      '
+  TargetAccountNumber:
+    Type: String
+    ConstraintDescription: '[0-9]+'
+    Description: 'Target AWS Account Number
+
+      '
+  TargetRoleName:
+    Type: String
+    Description: 'Target IAM Role name to be assumed by the Glue job.
+
+      '
+  SourceDynamoDBTable:
+    Type: String
+    ConstraintDescription: '[A-Za-z0-9_]+'
+    Description: 'Source DynamoDB Table name
+
+      '
+  WorkerType:
+    Type: String
+    Default: G.2X
+    Description: 'The type of predefined worker that is allocated when a job runs.
+      Accepts a value of Standard, G.1X, or G.2X.
+
+      '
+  NumberOfWorkers:
+    Type: Number
+    Default: 10
+    Description: 'The number of workers of a defined workerType that are allocated
+      when a job runs.
+
+      '
+  JobName:
+    Type: String
+    Default: Initial_Load
+    Description: 'Name of the Glue Job
+
+      '
+Resources:
+  InitialLoadJob:
+    Type: AWS::Glue::Job
+    Properties:
+      Role:
+        Ref: GlueJobRole
+      Description: Job created with CloudFormation
+      DefaultArguments:
+        --TARGET_DYNAMODB_NAME:
+          Ref: TargetDynamoDBTable
+        --TARGET_AWS_ACCOUNT_NUMBER:
+          Ref: TargetAccountNumber
+        --TARGET_ROLE_NAME:
+          Ref: TargetRoleName
+        --TARGET_REGION:
+          Ref: TargetRegion
+        --SOURCE_DYNAMODB_NAME:
+          Ref: SourceDynamoDBTable
+        --WORKER_TYPE:
+          Ref: WorkerType
+        --NUM_WORKERS:
+          Ref: NumberOfWorkers
+      Command:
+        Name: glueetl
+        PythonVersion: 3
+        ScriptLocation: ../../Glue_Jobs/InitialLoad.py
+      NumberOfWorkers:
+        Ref: NumberOfWorkers
+      WorkerType:
+        Ref: WorkerType
+      GlueVersion: 2.0
+      ExecutionProperty:
+        MaxConcurrentRuns: 10
+      Name:
+        Ref: JobName
+  GlueJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - glue.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: CrossAccountAssumeRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - sts:AssumeRole
+            Resource:
+              Fn::Sub: arn:aws:iam::${TargetAccountNumber}:role/${TargetRoleName}
+      - PolicyName: DynamoDBReadOnly
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:BatchGetItem
+            - dynamodb:DescribeTable
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            - dynamodb:Query
+            Resource: '*'
+          - Effect: Allow
+            Action:
+            - dynamodb:ListTables
+            Resource: '*'
+      - PolicyName: GlueS3BucketAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:GetObject
+            Resource: arn:aws:s3:::aws-sam-cli-managed-default-samclisourcebucket-*/*

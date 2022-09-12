@@ -9,7 +9,10 @@ arn:aws:dynamodb:us-east-1:682422205370:table/mx_admin_dmarc_copy/stream/2022-08
 TARGET
 233870680723
 arn:aws:dynamodb:us-east-1:233870680723:table/mx_admin_dmarc_copy
-Cross-Account-Dynamo-Role
+
+TARGET_PROD
+191686924229
+
 
 ----------------------------------------
 
@@ -41,19 +44,39 @@ mx_yaml_prod_complaint_aggregates failed because no more compute
   }
 }
 
+# Dynamo Replication
+----------------------------------------
+`DEVS`
 FUNCTION_NAME=cross-account-dynamo-replicatio-ReplayFromStreamFn-uumi33NY6SI5
+`PROD`
+FUNCTION_NAME=cross-account-dynamo-replicatio-ReplayFromStreamFn-HRHwfKyuZcJA
 
-aws dynamodb update-table --stream-specification StreamEnabled=true,StreamViewType=NEW_IMAGE --table-name mx_PerfUidTicks
+TABLE=mx_yaml_prod_DmarcAggregate_SenderIpAddress_Sub
+### Set up Aliases to create the strem
+alias create_stream="aws dynamodb update-table --stream-specification StreamEnabled=true,StreamViewType=NEW_IMAGE --table-name $TABLE"
+alias check_stream="aws dynamodb describe-table --table-name $TABLE | grep TableStatus"
+alias set_stream="STREAM_ARN=`aws dynamodb describe-table --table-name $TABLE | grep LatestStreamArn | sed  's/^.*arn/arn/'`"
 
-aws dynamodb describe-table --table-name mx_PerfUidTicks | grep TableStatus
-aws dynamodb describe-table --table-name mx_PerfUidTicks | grep LatestStreamArn
-
-STREAM_ARN=arn:aws:dynamodb:us-east-1:682422205370:table/mx_PerfUidTicks/stream/2022-08-07T00:47:57.931
-
-
+### Set up an Alias to deploy the mapping
 alias enable_mapping="aws lambda create-event-source-mapping \
 --function-name $FUNCTION_NAME \
 --batch-size 500 \
 --maximum-batching-window-in-seconds 5 \
 --starting-position LATEST \
---event-source-arn $STREAM_ARN"
+--event-source-arn $STREAM_ARN "
+
+### Finished product
+`SET THE TABLE=`
+aws dynamodb update-table --stream-specification StreamEnabled=true,StreamViewType=NEW_IMAGE --table-name $TABLE
+
+aws dynamodb describe-table --table-name $TABLE | grep TableStatus
+
+STREAM_ARN=`aws dynamodb describe-table --table-name $TABLE | grep LatestStreamArn | sed  's/^.*arn/arn/'`
+
+UUID=`aws lambda create-event-source-mapping --function-name $FUNCTION_NAME --batch-size 1000 --starting-position TRIM_HORIZON --event-source-arn $STREAM_ARN | tail -1 | sed 's/.*UUID: //'`
+
+aws lambda get-event-source-mapping --uuid $UUID
+
+
+mx_yaml_prod_complaint_aggregate_mothly_rollup_oes
+mx_yaml_prod_complaint_aggregate_monthly_rollup_oes
