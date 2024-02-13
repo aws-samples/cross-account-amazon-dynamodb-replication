@@ -50,7 +50,7 @@ Resources:
                   Action:
                     - dynamodb:DescribeStream
                     - dynamodb:GetRecords
-                    - dynamodb:GetShardIterator",
+                    - dynamodb:GetShardIterator
                     - dynamodb:ListStreams
                   Resource: !Ref SourceTableStreamARN
                 - Effect: Allow
@@ -61,7 +61,7 @@ Resources:
                   Action:
                     - logs:CreateLogGroup
                     - logs:CreateLogStream
-                    - logs:PutLogEvent
+                    - logs:PutLogEvents
                   Resource: '*'
             Environment:
                 Variables:
